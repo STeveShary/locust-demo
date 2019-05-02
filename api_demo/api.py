@@ -15,8 +15,15 @@ def hello_world():
 
 
 @app.route('/books')
-def fetch_all():
-    return json.dumps(Books.query.all(), cls=AlchemyEncoder)
+def fetch_multiple():
+    book_ids = request.args.get('ids').split(",")
+    return json.dumps(Books.query.filter(Books.id.in_(book_ids)).all(), cls=AlchemyEncoder)
+
+
+@app.route('/book-title')
+def fetch_by_title():
+    title = request.args.get('title')
+    return json.dumps(Books.query.filter(Books.title.like(f"%{title}%")).all(), cls=AlchemyEncoder)
 
 
 @app.route('/book')
@@ -29,7 +36,3 @@ def fetch_book():
 @app.teardown_appcontext
 def shutdown_session(exception=None):
     db_session.remove()
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
